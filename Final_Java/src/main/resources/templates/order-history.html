@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <title>Spring Ecommerce</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <link href="https://fonts.googleapis.com/css?family=Rubik:400,700|Crimson+Text:400,400i" rel="stylesheet">
+  <link rel="stylesheet" th:href="@{/fonts/icomoon/style.css}">
+  <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
+  <link rel="stylesheet" th:href="@{/css/magnific-popup.css}">
+  <link rel="stylesheet" th:href="@{/css/jquery-ui.css}">
+  <link rel="stylesheet" th:href="@{/css/owl.carousel.min.css}">
+  <link rel="stylesheet" th:href="@{/css/owl.theme.default.min.css}">
+  <link rel="stylesheet" th:href="@{/css/aos.css}">
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/all.min.css">
+  <style>
+    .alert-success {
+      padding: 10px;
+      background-color: #dff0d8;
+      color: #3c763d;
+      border: 1px solid #d6e9c6;
+      border-radius: 4px;
+      position: absolute;
+      right: 200px;
+    }
+
+    .alert-warning {
+      padding: 10px;
+      background-color: #dff0d8;
+      color: #ba552f;
+      border: 1px solid #d6e9c6;
+      border-radius: 4px;
+      position: absolute;
+      right: 200px;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="site-wrap">
+
+  <!-----------------------------HEADER------------------------------>
+  <div class="site-navbar py-2">
+    <div class="container">
+      <div class="d-flex align-items-center justify-content-between">
+        <div class="logo">
+          <div class="site-logo">
+            <a href="/" class="js-logo-clone">Spring <small>Ecommerce</small></a>
+          </div>
+        </div>
+        <div class="main-nav d-none d-lg-flex">
+          <nav class="site-navigation text-right text-md-center" role="navigation">
+            <ul class="site-menu js-clone-nav d-none d-lg-block">
+              <li th:if="${session.isLogged == null || session.isLogged == false}">
+                <a href="/login">Login</a>
+              </li>
+              <li th:if="${session.isLogged != null && session.isLogged == true && session.customer != null}">
+                <a href="/order-history" th:text="${session.customer.getName()} + '\'s Order History'"></a>
+              </li>
+              <li th:if="${session.isLogged != null && session.isLogged == true}">
+                <a href="/logout">Logout</a>
+              </li>
+            </ul>
+          </nav>
+          <div class="icons" style="align-self: center">
+            <a href="/cart" class="icons-btn d-inline-block bag">
+              <span class="icon-shopping-bag"></span>
+              <span class="number" th:text="${session.totalQuantity}"></span>
+            </a>
+            <div th:if="${addCartSuccess}" class="alert-success">
+              <span th:text="${addCartSuccess}"></span>
+            </div>
+            <div th:if="${addCartWarning}" class="alert-warning">
+              <span th:text="${addCartWarning}"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-----------------------------BODY-------------------------------->
+  <div class="bg-light py-3">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-12 mb-0">
+          <a href="/">Store</a>
+          <span class="mx-2 mb-0">/</span>
+          <strong class="text-black">Purchase History</strong>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="site-section">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-12">
+          <div class="accordion" id="accordionExample">
+
+              <div class="card" th:each="order : ${listOrders}">
+                <div class="card-header d-flex" style="justify-content: space-between" id="headingOne">
+                  <h2 class="mb-0">
+                    <button class="btn btn-link" type="button" data-toggle="collapse" th:data-target="'#collapse-' + ${order.id}" aria-expanded="true" th:aria-controls="'collapse-' + ${order.id}">
+                      Order #<span th:text="${order.id}"></span> - <span th:text="${order.dateCreated}"></span>
+                    </button>
+                  </h2>
+                  <div class="text-black font-weight-bold" style="align-self: center">
+                    <strong th:switch="${order.status}">
+                      <span th:case="0" th:text="'Order Cancelled'" class="text-danger"></span>
+                      <span th:case="1" th:text="'Pending Confirmation'" class="text-warning"></span>
+                      <span th:case="2" th:text="'In Transit'" class="text-primary"></span>
+                      <span th:case="3" th:text="'Successfully Delivered'" class="text-success"></span>
+                    </strong>
+                  </div>
+                </div>
+                <div th:id="'collapse-' + ${order.id}" class="collapse" aria-labelledby="headingOne" data-parent="#accordionExample">
+                  <div class="card-body">
+                    <table class="table">
+                      <thead>
+                      <tr>
+                        <th>Product Name</th>
+                        <th>Quantity</th>
+                        <th>Price</th>
+                        <th>Amount</th>
+                      </tr>
+                      </thead>
+                      <tbody>
+                      <tr th:each="cartDetail : ${order.cartDetails}">
+                        <td th:text="${cartDetail.product.name}"></td>
+                        <td th:text="${cartDetail.quantity}"></td>
+                        <td th:text="${cartDetail.price} + ' VND'"></td>
+                        <td th:text="${cartDetail.amount} + ' VND'"></td>
+                      </tr>
+                      </tbody>
+                      <tr>
+                        <td class="text-black font-weight-bold"><strong>Order Total</strong></td>
+                        <td></td><td></td>
+                        <td class="text-black font-weight-bold"><strong th:text="${order.cart.totalAmount} + ' VND'"></strong></td>
+                      </tr>
+                      <tr>
+                        <td><span class="text-black font-weight-bold"> Delivery Address: </span> <span th:text="${order.specificAddress}"></span>, <span th:text="'Ward ' + ${order.ward}"></span>, <span th:text="'District ' + ${order.district}"></span>, <span th:text="${order.city}"></span></td>
+                      </tr>
+                      <tr>
+                        <td><span class="text-black font-weight-bold">Phone Number: </span> <span th:text="${order.phone}"></span></td>
+                      </tr>
+                    </table>
+                  </div>
+                </div>
+              </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script th:src="@{/js/jquery-3.3.1.min.js}"></script>
+<script th:src="@{/js/jquery-ui.js}"></script>
+<script th:src="@{/js/popper.min.js}"></script>
+<script th:src="@{/js/bootstrap.min.js}"></script>
+<script th:src="@{/js/owl.carousel.min.js}"></script>
+<script th:src="@{/js/jquery.magnific-popup.min.js}"></script>
+<script th:src="@{/js/aos.js}"></script>
+<script th:src="@{/js/main.js}"></script>
+</body>
+
+</html>

@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>Spring Ecommerce</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <link href="https://fonts.googleapis.com/css?family=Rubik:400,700|Crimson+Text:400,400i" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/fonts/icomoon/style.css}">
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
+    <link rel="stylesheet" th:href="@{/css/magnific-popup.css}">
+    <link rel="stylesheet" th:href="@{/css/jquery-ui.css}">
+    <link rel="stylesheet" th:href="@{/css/owl.carousel.min.css}">
+    <link rel="stylesheet" th:href="@{/css/owl.theme.default.min.css}">
+    <link rel="stylesheet" th:href="@{/css/aos.css}">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+
+    <!-- Link to noUiSlider CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/14.6.4/nouislider.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/14.6.4/nouislider.min.js"></script>
+    <style>
+        .filter-price input {
+            border: none;
+            width: 100px;
+            background-color: white;
+        }
+
+        #max_price {
+            text-align: end;
+        }
+
+        #search-input {
+            width: 100%;
+            height: 40px;
+        }
+
+        #search-results {
+            position: absolute;
+            z-index: 2;
+            background-color: #fff;
+            width: 100%;
+            border: 1px solid #ddd;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            max-height: 200px;
+            overflow-y: scroll;
+        }
+
+        #search-results a:hover {
+            color: #FF1493;
+        }
+
+        .alert-success {
+            padding: 10px;
+            background-color: #dff0d8;
+            color: #3c763d;
+            border: 1px solid #d6e9c6;
+            border-radius: 4px;
+            position: absolute;
+            right: 200px;
+        }
+
+        .alert-warning {
+            padding: 10px;
+            background-color: #dff0d8;
+            color: #ba552f;
+            border: 1px solid #d6e9c6;
+            border-radius: 4px;
+            position: absolute;
+            right: 200px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="site-wrap">
+
+        <!-----------------------------HEADER------------------------------>
+        <div class="site-navbar py-2">
+            <div class="container">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div class="logo">
+                        <div class="site-logo">
+                            <a href="/" class="js-logo-clone">Spring <small>Ecommerce</small></a>
+                        </div>
+                    </div>
+                    <div class="main-nav d-none d-lg-flex">
+                        <nav class="site-navigation text-right text-md-center" role="navigation">
+                            <ul class="site-menu js-clone-nav d-none d-lg-block">
+                                <li th:if="${session.isLogged == null || session.isLogged == false}">
+                                    <a href="/login">Login</a>
+                                </li>
+                                <li th:if="${session.isLogged != null && session.isLogged == true && session.customer != null}">
+                                    <a href="/order-history" th:text="${session.customer.getName()} + '\'s Order History'"></a>
+                                </li>
+                                <li th:if="${session.isLogged != null && session.isLogged == true && session.customer == null}">
+                                    <a href="/admin">Back to Admin</a>
+                                </li>
+                                <li th:if="${session.isLogged != null && session.isLogged == true}">
+                                    <a href="/logout">Logout</a>
+                                </li>
+                            </ul>
+                        </nav>
+                        <div class="icons" style="align-self: center">
+                            <a href="/cart" class="icons-btn d-inline-block bag">
+                                <span class="icon-shopping-bag"></span>
+                                <span class="number" th:text="${session.totalQuantity}"></span>
+                            </a>
+                            <div th:if="${addCartSuccess}" class="alert-success">
+                                <span th:text="${addCartSuccess}"></span>
+                            </div>
+                            <div th:if="${addCartWarning}" class="alert-warning">
+                                <span th:text="${addCartWarning}"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-----------------------------BODY------------------------------------>
+        <div class="bg-light py-3">
+            <div class="container">
+                <div class="row">
+                    <div class="col-3 mb-0" style="align-self: center"><strong class="text-black">Store</strong></div>
+                    <div class="col-9">
+                        <input type="text" id="search-input" placeholder="Search keyword...">
+                        <div id="search-results"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="site-section">
+            <div class="container">
+
+                <div class="row">
+                    <div class="col-3">
+                        <h3 class="mb-3 h6 text-uppercase text-black d-block">Filter by Category</h3>
+                        <select class="form-control" id="category-filter">
+                            <option value="">All categories</option>
+                        </select>
+                    </div>
+                    <div class="col-3">
+                        <h3 class="mb-3 h6 text-uppercase text-black d-block">Filter by Feature</h3>
+                        <select class="form-control" id="feature-filter">
+                            <option value="">All features</option>
+                        </select>
+                    </div>
+                    <div class="col-3">
+                        <h3 class="mb-3 h6 text-uppercase text-black d-block">Filter by Sort</h3>
+                        <select class="form-control" id="price-name-filter">
+                            <option value="">No sort</option>
+                            <option value="/sort-by/name/asc">Name, A to Z</option>
+                            <option value="/sort-by/name/desc">Name, Z to A</option>
+                            <option value="/sort-by/price/asc">Price, low to high</option>
+                            <option value="/sort-by/price/desc">Price, high to low</option>
+                        </select>
+                    </div>
+                    <div class="col-3 filter-price">
+                        <h3 class="mb-3 h6 text-uppercase text-black d-block">Filter by Price</h3>
+                        <div id="slider"></div>
+                        <div class="row">
+                            <div class="col-6">
+                                <input id="min_price" type="text" disabled />
+                            </div>
+                            <div class="col-6">
+                                <input id="max_price" type="text" disabled />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row" id="product-space">
+
+                </div>
+
+                <div class="row mt-5">
+                    <div class="col-md-12 text-center">
+                        <div class="site-block-27">
+                            <ul>
+                                <li><a href="#">&lt;</a></li>
+                                <li class="active"><span>1</span></li>
+                                <li><a href="#">2</a></li>
+                                <li><a href="#">3</a></li>
+                                <li><a href="#">4</a></li>
+                                <li><a href="#">5</a></li>
+                                <li><a href="#">&gt;</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script th:src="@{/js/jquery-3.3.1.min.js}"></script>
+    <script th:src="@{/js/jquery-ui.js}"></script>
+    <script th:src="@{/js/popper.min.js}"></script>
+    <script th:src="@{/js/bootstrap.min.js}"></script>
+    <script th:src="@{/js/owl.carousel.min.js}"></script>
+    <script th:src="@{/js/jquery.magnific-popup.min.js}"></script>
+    <script th:src="@{/js/aos.js}"></script>
+    <script th:src="@{/js/main.js}"></script>
+
+    <script>
+        $(document).ready(function() {
+            // Load categoriy select & filter option
+            $.ajax({
+                url: "/api/category",
+                type: "GET",
+                dataType: "json",
+                success: function(data) {
+                    var categorySelect = $("#category");
+                    var categoryFilter = $("#category-filter");
+                    $.each(data, function(index, category) {
+                        categorySelect.append($('<option>', {
+                            value: category.id,
+                            text: category.name
+                        }));
+                        categoryFilter.append($('<option>', {
+                            value: category.id,
+                            text: category.name
+                        }));
+                    });
+                },
+                error: function() {
+                    alert('Something went wrong. Try it later.');
+                }
+            });
+
+            // Load feature select & filter option
+            $.ajax({
+                url: "/api/feature",
+                type: "GET",
+                dataType: "json",
+                success: function(data) {
+                    var featureSelect = $("#feature");
+                    var featureFilter = $("#feature-filter")
+                    $.each(data, function(index, feature) {
+                        featureSelect.append($('<option>', {
+                            value: feature.id,
+                            text: feature.name
+                        }));
+                        featureFilter.append($('<option>', {
+                            value: feature.id,
+                            text: feature.name
+                        }));
+                    });
+                },
+                error: function() {
+                    alert('Something went wrong. Try it later.');
+                }
+            });
+
+            // Slider price
+            var slider = document.getElementById('slider');
+            var minPrice = document.getElementById('min_price');
+            var maxPrice = document.getElementById('max_price');
+
+            noUiSlider.create(slider, {
+                start: [0, 100000],
+                connect: true,
+                range: {
+                    'min': 0,
+                    'max': 100000
+                }
+            });
+
+            slider.noUiSlider.on('update', function(values, handle) {
+                if (handle === 0) {
+                    minPrice.value = Math.round(values[handle]) + " vnd";
+                } else {
+                    maxPrice.value = Math.round(values[handle]) + " vnd";
+                }
+                var min = Math.round(values[0]);
+                var max = Math.round(values[1]);
+
+                handleFilterChange(min, max);
+            });
+
+            // Handle filter change event
+            function handleFilterChange(minPrice, maxPrice) {
+                var categoryId = $("#category-filter").val();
+                var featureId = $("#feature-filter").val();
+                var sort = $("#price-name-filter").val();
+                var url = '/api/product'; // Load all
+                if (categoryId !== '') {
+                    url += '/category/' + categoryId; // with category id
+                }
+                if (featureId !== '') {
+                    url += '/feature/' + featureId; // with feature id
+                }
+                if (sort !== '') {
+                    url += sort;
+                }
+                if (minPrice != 0 || maxPrice != 100000)
+                {
+                    url += '/price-between/' + minPrice + '/' + maxPrice; // with a range of price
+                }
+                console.log(url);
+                $.ajax({
+                    url: url,
+                    type: 'GET',
+                    success: function(data) {
+                        var productSpace = $('#product-space');
+                        productSpace.empty();
+                        $.each(data, function(index, product) {
+                            var productHtml = '<div class="col-sm-6 col-lg-4 text-center item mb-4">';
+                            if (product.quantity === 0) {
+                                productHtml += '<span class="tag">Out of stock</span>';
+                            }
+                            productHtml += '<a href="/product-detail/'+product.id+'"><img src="/images/' + product.image + '" alt="Image" style="width: 270px; height: 370px"></a>';
+                            productHtml += '<h3 class="text-dark" style="font-size: 23px"><a href="/product-detail/'+product.id+'">' + product.name + '</a></h3>';
+                            productHtml += '<p class="price">' + product.price + ' VND</p>';
+                            if (product.quantity !== 0) {
+                                productHtml += '<p><a href="/api/cart/add/' + product.id + '/1" class="buy-now btn btn-sm height-auto px-4 py-3 btn-primary">Add To Cart</a></p>';
+                            }
+                            productHtml += '</div>';
+                            productSpace.append(productHtml);
+                        });
+                    },
+                    error: function() {
+                        alert('Something went wrong. Try it later.');
+                    }
+                });
+            }
+
+            $('#category-filter, #feature-filter, #price-name-filter').on('change', function () {
+                var minPrice = Math.round(slider.noUiSlider.get()[0]);
+                var maxPrice = Math.round(slider.noUiSlider.get()[1]);
+                handleFilterChange(minPrice, maxPrice);
+            });
+
+
+            $('#search-input').on('input', function() {
+                var keyword = $(this).val().trim();
+                if (keyword !== '') {
+                    $.ajax({
+                        url: '/api/product/name/' + keyword,
+                        type: 'GET',
+                        dataType: 'json',
+                        success: function(data) {
+                            var results = '';
+                            $.each(data, function(index, product) {
+                                results += '<a href="/product-detail/'+product.id+'"><div>' + product.name + '</div></a>';
+                            });
+                            if (results === '') {
+                                results = '<div>No search results</div>';
+                            }
+                            $('#search-results').html(results);
+                        },
+                        error: function() {
+                            $('#search-results').html('Error loading search results.');
+                        }
+                    });
+                } else {
+                    $('#search-results').empty();
+                }
+            });
+
+            setTimeout(function() {
+                $(".alert-success").fadeOut('slow');
+                $(".alert-warning").fadeOut('slow');
+            }, 3000);
+
+        });
+
+        $(document).on('click', function(event) {
+            var searchResults = $('#search-results');
+            var searchInput = $('#search-input');
+
+            if (!searchResults.is(event.target) && !searchInput.is(event.target) && searchResults.has(event.target).length === 0) {
+                searchResults.empty();
+            }
+        });
+    </script>
+</body>
+
+</html>

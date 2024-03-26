@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>Spring Ecommerce</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <link href="https://fonts.googleapis.com/css?family=Rubik:400,700|Crimson+Text:400,400i" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/fonts/icomoon/style.css}">
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
+    <link rel="stylesheet" th:href="@{/css/magnific-popup.css}">
+    <link rel="stylesheet" th:href="@{/css/jquery-ui.css}">
+    <link rel="stylesheet" th:href="@{/css/owl.carousel.min.css}">
+    <link rel="stylesheet" th:href="@{/css/owl.theme.default.min.css}">
+    <link rel="stylesheet" th:href="@{/css/aos.css}">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/all.min.css">
+    <style>
+        .alert-success {
+            padding: 10px;
+            background-color: #dff0d8;
+            color: #3c763d;
+            border: 1px solid #d6e9c6;
+            border-radius: 4px;
+            position: absolute;
+            right: 200px;
+        }
+
+        .alert-warning {
+            padding: 10px;
+            background-color: #dff0d8;
+            color: #ba552f;
+            border: 1px solid #d6e9c6;
+            border-radius: 4px;
+            position: absolute;
+            right: 200px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="site-wrap">
+
+        <!-----------------------------HEADER------------------------------>
+        <div class="site-navbar py-2">
+            <div class="container">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div class="logo">
+                        <div class="site-logo">
+                            <a href="/" class="js-logo-clone">Spring <small>Ecommerce</small></a>
+                        </div>
+                    </div>
+                    <div class="main-nav d-none d-lg-flex">
+                        <nav class="site-navigation text-right text-md-center" role="navigation">
+                            <ul class="site-menu js-clone-nav d-none d-lg-block">
+                                <li th:if="${session.isLogged == null || session.isLogged == false}">
+                                    <a href="/login">Login</a>
+                                </li>
+                                <li th:if="${session.isLogged != null && session.isLogged == true && session.customer != null}">
+                                    <a href="/order-history" th:text="${session.customer.getName()} + '\'s Order History'"></a>
+                                </li>
+                                <li th:if="${session.isLogged != null && session.isLogged == true}">
+                                    <a href="/logout">Logout</a>
+                                </li>
+                            </ul>
+                        </nav>
+                        <div class="icons" style="align-self: center">
+                            <a href="/cart" class="icons-btn d-inline-block bag">
+                                <span class="icon-shopping-bag"></span>
+                                <span class="number" th:text="${session.totalQuantity}"></span>
+                            </a>
+                            <div th:if="${addCartSuccess}" class="alert-success">
+                                <span th:text="${addCartSuccess}"></span>
+                            </div>
+                            <div th:if="${addCartWarning}" class="alert-warning">
+                                <span th:text="${addCartWarning}"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-----------------------------BODY-------------------------------->
+        <div class="bg-light py-3">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-12 mb-0">
+                        <a href="/">Store</a>
+                        <span class="mx-2 mb-0">/</span>
+                        <strong class="text-black">Cart</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="site-section">
+            <div class="container">
+                <div class="row mb-5">
+                    <form class="col-md-12" method="post">
+                        <div class="site-blocks-table">
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th class="product-thumbnail">Image</th>
+                                        <th class="product-name">Product</th>
+                                        <th class="product-price">Price</th>
+                                        <th class="product-quantity">Quantity</th>
+                                        <th class="product-total">Total</th>
+                                        <th class="product-remove">Remove</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="cartdetail : ${listCartDetail}">
+                                        <td class="product-thumbnail">
+                                            <img th:src="@{'/images/' + ${cartdetail.getProduct().getImage()}}" alt="Image" class="img-fluid">
+                                        </td>
+                                        <td class="product-name">
+                                            <h2 class="h5 text-black" th:text="${cartdetail.getProduct().getName()}"></h2>
+                                        </td>
+                                        <td th:text="${cartdetail.getPrice()} + ' VND'"></td>
+                                        <td>
+                                            <div class="input-group mb-3" style="max-width: 120px;">
+                                                <div class="input-group-prepend">
+                                                    <button class="btn btn-outline-primary js-btn-minus" type="button">&minus;</button>
+                                                </div>
+                                                <input th:data-cart-detail-id="${cartdetail.getId()}"
+                                                       th:data-cart-id="${cartdetail.getCart().getId()}"
+                                                       th:data-product-id="${cartdetail.getProduct().getId()}"
+                                                       th:data-price="${cartdetail.getPrice()}"
+                                                       th:data-old-quantity="${cartdetail.getQuantity()}"
+                                                       th:value="${cartdetail.getQuantity()}"
+                                                       type="text" class="form-control text-center productCart-quantity" placeholder="" aria-label="Example text with button addon" aria-describedby="button-addon1" readonly style="background-color: white">
+                                                <div class="input-group-append">
+                                                    <button class="btn btn-outline-primary js-btn-plus" type="button">&plus;</button>
+                                                </div>
+                                            </div>
+
+                                        </td>
+                                        <td th:text="${cartdetail.getAmount()} + ' VND'"></td>
+                                        <td><a th:data-id="${cartdetail.getId()}" class="btn btn-primary height-auto btn-sm delete">X</a></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="row mb-5">
+                            <div class="col-md-6 mb-3 mb-md-0">
+                                <button id="update-button" class="btn btn-primary btn-md btn-block">Update Cart</button>
+                            </div>
+                            <div class="col-md-6">
+                                <button class="btn btn-outline-primary btn-md btn-block" onclick="window.location='/'">Continue Shopping</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 pl-5">
+                        <div class="row justify-content-end">
+                            <div class="col-md-7">
+                                <div class="row">
+                                    <div class="col-md-12 text-right border-bottom mb-5">
+                                        <h3 class="text-black h4 text-uppercase">Cart Totals</h3>
+                                    </div>
+                                </div>
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <span class="text-black">Subtotal</span>
+                                    </div>
+                                    <div class="col-md-6 text-right">
+                                        <strong class="text-black" th:text="${totalAmount} + ' VND'"></strong>
+                                    </div>
+                                </div>
+                                <div class="row mb-5">
+                                    <div class="col-md-6">
+                                        <span class="text-black">Total</span>
+                                    </div>
+                                    <div class="col-md-6 text-right">
+                                        <strong class="text-black" th:text="${totalAmount} + ' VND'"></strong>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <button class="btn btn-primary btn-lg btn-block" onclick="window.location='/checkout'">
+                                          Proceed To Checkout
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script th:src="@{/js/jquery-3.3.1.min.js}"></script>
+    <script th:src="@{/js/jquery-ui.js}"></script>
+    <script th:src="@{/js/popper.min.js}"></script>
+    <script th:src="@{/js/bootstrap.min.js}"></script>
+    <script th:src="@{/js/owl.carousel.min.js}"></script>
+    <script th:src="@{/js/jquery.magnific-popup.min.js}"></script>
+    <script th:src="@{/js/aos.js}"></script>
+    <script th:src="@{/js/main.js}"></script>
+    <script>
+        $(document).ready(function() {
+            $('tbody').on('click', '.delete', function() {
+                var cartDetailId = $(this).data('id');
+                if (confirm('Are you sure you want to delete this Product?')) {
+                    $.ajax({
+                        url: '/api/cart/delete-cartDetail/' + cartDetailId,
+                        type: 'DELETE',
+                        success: function (reponse) {
+                            alert(reponse);
+                        },
+                        error: function () {
+                            alert("Something went wrong. Please try again later");
+                        }
+                    });
+                }
+                $(document).ajaxStop(function() {
+                    location.reload();
+                });
+            });
+
+            $("#update-button").on("click", function() {
+                // Lấy danh sách các sản phẩm đã thay đổi số lượng
+                var changedProducts = [];
+                $("tbody tr").each(function() {
+                    var quantityInput = $(this).find(".productCart-quantity");
+                    var cartDetailId = quantityInput.data("cart-detail-id");
+                    var cartId = quantityInput.data("cart-id");
+                    var productId = quantityInput.data("product-id");
+                    var price = quantityInput.data("price");
+                    var oldQuantity = quantityInput.data("old-quantity");
+                    var newQuantity = quantityInput.val();
+                    if (newQuantity != oldQuantity) {
+                        var newAmount = price * newQuantity;
+                        var cartDetail = {
+                            id: cartDetailId,
+                            quantity: parseInt(newQuantity),
+                            price: price,
+                            amount: newAmount,
+                            cart: {
+                                id: cartId
+                            },
+                            product: {
+                                id: productId
+                            }
+                        };
+                        changedProducts.push(cartDetail);
+                    }
+                });
+
+                $.ajax({
+                    url: "api/cart/update-cartDetail",
+                    method: "POST",
+                    contentType: "application/json;charset=UTF-8",
+                    data: JSON.stringify(changedProducts),
+                    success: function (reponse) {
+                        alert(reponse);
+                        location.reload();
+                    },
+                    error: function () {
+                        alert("Something went wrong. Please try again later");
+                    }
+                });
+            });
+
+            setTimeout(function() {
+                $(".alert-success").fadeOut('slow');
+                $(".alert-warning").fadeOut('slow');
+            }, 3000);
+        })
+
+    </script>
+</body>
+
+</html>

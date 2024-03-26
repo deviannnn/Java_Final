@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>Admin Spring Ecommerce</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <link href='https://fonts.googleapis.com/css?family=Roboto:400,100,300,700' rel='stylesheet' type='text/css'>
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+
+    <link rel="stylesheet" th:href="@{/css/style_admin.css}">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+</head>
+
+<body>
+    <section class="ftco-navbar">
+        <nav class="navbar navbar-expand-lg navbar-dark ftco_navbar bg-dark ftco-navbar-light" id="ftco-navbar">
+            <div class="container">
+                <a class="navbar-brand" href="/admin">Spring <small>Ecommerce</small></a>
+
+                <div class="collapse navbar-collapse" id="ftco-nav">
+                    <ul class="navbar-nav m-auto">
+                        <li class="nav-item"><a href="/admin/category" class="nav-link">Category</a></li>
+                        <li class="nav-item active"><a href="/admin/feature" class="nav-link">Feature</a></li>
+                        <li class="nav-item"><a href="/admin/product" class="nav-link">Product</a></li>
+                        <li class="nav-item"><a href="/admin/account" class="nav-link">Account</a></li>
+                        <li class="nav-item"><a href="/admin/orders" class="nav-link">Orders</a></li>
+                        <li class="nav-item"><a href="/" class="nav-link">Go to Web</a></li>
+                    </ul>
+                </div>
+
+                <div class="form-group d-flex">
+                    <button class="form-control search" onclick="window.location='/logout'">
+						<span class="fa fa-sign-out"></span>
+					</button>
+                </div>
+            </div>
+        </nav>
+        <!-- END nav -->
+    </section>
+
+    <div class="container mt-3">
+        <h2 class="text-center">Feature Management</h2>
+        <div class="row">
+            <div class="col-4">
+                <div class="mb-4">
+                    <h4 class="text-center">Add Form</h4>
+                    <form method="post" action="/api/feature/add">
+                        <div class="form-group">
+                            <label for="name-add">Name</label>
+                            <input type="text" class="form-control" id="name-add" name="name" required>
+                        </div>
+                        <p th:text="${messageForAdd}" th:style="'color:' + ${colorForAdd}" class="flash-message"></p>
+                        <button id="add" type="submit" class="btn btn-success">Add</button>
+                    </form>
+                </div>
+                <hr>
+                <div class="mt-4">
+                    <h4 class="text-center">Update Form</h4>
+                    <form id="edit-form" method="post" action="/api/feature/update">
+                        <div class="form-group" >
+                            <label for="name-update">Name</label>
+                            <input type="hidden" class="form-control" id="id-update" name="id" required>
+                            <input type="text" class="form-control" id="name-update" name="name" required>
+                        </div>
+                        <p th:text="${messageForUpdate}" th:style="'color:' + ${colorForUpdate}" class="flash-message"></p>
+                        <button id="update" type="submit" class="btn btn-warning" disabled>Update</button>
+                    </form>
+                </div>
+            </div>
+            <div class="col-8">
+                <table class="table mt-3">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Function</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+
+    <script th:src="@{/js/jquery.min.js}"></script>
+    <script th:src="@{/js/popper.js}"></script>
+    <script th:src="@{/js/bootstrap.min.js}"></script>
+    <script th:src="@{/js/main.js}"></script>
+    <script>
+        $(document).ready(function() {
+            $.ajax({
+                url: '/api/feature',
+                type: 'GET',
+                dataType: "json",
+                success: function (data) {
+                    var tbody = $('tbody');
+                    $.each(data, function(index, feature) {
+                        var tr = $('<tr>');
+                        tr.append('<td>' + feature.id + '</td>');
+                        tr.append('<td>' + feature.name + '</td>');
+                        tr.append('<td>' +
+                            '<button type="button" class="btn btn-primary edit" data-id="' + feature.id + '">Edit</button>' +
+                            '<button type="button" class="btn btn-danger delete" data-id="' + feature.id + '">Delete</button>' +
+                            '</td>');
+                        tbody.append(tr);
+                    });
+                }
+            });
+
+            $('tbody').on('click', '.delete', function() {
+                var featureId = $(this).data('id');
+                if (confirm('Are you sure you want to delete this Feature?')) {
+                    $.ajax({
+                        url: '/api/feature/delete/' + featureId,
+                        type: 'DELETE',
+                        success: function (respone) {
+                            alert(respone);
+                        },
+                        error: function () {
+                            alert("Something went wrong. Please try again later");
+                        }
+                    });
+                }
+                $(document).ajaxStop(function() {
+                    location.reload();
+                });
+            });
+
+            $('tbody').on('click', '.edit', function() {
+                var featureId = $(this).data('id');
+                $.ajax({
+                    url: '/api/feature/' + featureId,
+                    type: 'GET',
+                    success: function (feature) {
+                        $('#name-update').val(feature.name);
+                        $('#id-update').val(feature.id);
+                        $('#update').prop('disabled', false);
+                        $('#name-add').prop('disabled', true);
+                        $('#add').prop('disabled', true);
+                    },
+                    error: function () {
+                        alert("Something went wrong. Please try again later");
+                    }
+                });
+            });
+
+            setTimeout(function() {
+                $('.flash-message').fadeOut('slow');
+            }, 3000);
+        });
+    </script>
+</body>
+
+</html>

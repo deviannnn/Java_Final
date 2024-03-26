@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <title>Pharma &mdash; Project</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <link href="https://fonts.googleapis.com/css?family=Rubik:400,700|Crimson+Text:400,400i" rel="stylesheet">
+  <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+
+<body>
+<div class="site-section">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-12 text-center" th:if="${registerFail}">
+        <h2 class="display-3 text-danger">Error</h2>
+        <p class="lead mb-5" th:text="${registerFail}"></p>
+        <p><a href="index.html" class="btn btn-md height-auto px-4 py-3 btn-primary">Back to Store</a></p>
+      </div>
+
+      <div class="col-md-12 text-center" th:if="${registerSuccess}">
+        <h2 class="display-3 text-success">Success</h2>
+        <p class="lead mb-5" th:text="${registerSuccess}"></p>
+        <p><a href="/login" class="btn btn-md height-auto px-4 py-3 btn-primary">Back to Login</a></p>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+
+</html>

@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>Spring Ecommerce</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <link href="https://fonts.googleapis.com/css?family=Rubik:400,700|Crimson+Text:400,400i" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/fonts/icomoon/style.css}">
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
+    <link rel="stylesheet" th:href="@{/css/magnific-popup.css}">
+    <link rel="stylesheet" th:href="@{/css/jquery-ui.css}">
+    <link rel="stylesheet" th:href="@{/css/owl.carousel.min.css}">
+    <link rel="stylesheet" th:href="@{/css/owl.theme.default.min.css}">
+    <link rel="stylesheet" th:href="@{/css/aos.css}">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+
+</head>
+
+<body>
+
+    <div class="site-wrap">
+
+        <!-----------------------------HEADER------------------------------>
+        <div class="site-navbar py-2">
+            <div class="container">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div class="logo">
+                        <div class="site-logo">
+                            <a href="/" class="js-logo-clone">Spring <small>Ecommerce</small></a>
+                        </div>
+                    </div>
+                    <div class="main-nav d-none d-lg-flex">
+                        <nav class="site-navigation text-right text-md-center" role="navigation">
+                            <ul class="site-menu js-clone-nav d-none d-lg-block">
+                                <li th:if="${session.isLogged == null || session.isLogged == false}">
+                                    <a href="/login">Login</a>
+                                </li>
+                                <li th:if="${session.isLogged != null && session.isLogged == true && session.customer != null}">
+                                    <a href="/order-history" th:text="${session.customer.getName()} + '\'s Order History'"></a>
+                                </li>
+                                <li th:if="${session.isLogged != null && session.isLogged == true}">
+                                    <a href="/logout">Logout</a>
+                                </li>
+                            </ul>
+                        </nav>
+                        <div class="icons" style="align-self: center">
+                            <a href="/cart" class="icons-btn d-inline-block bag">
+                                <span class="icon-shopping-bag"></span>
+                                <span class="number" th:text="${session.totalQuantity}"></span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-----------------------------BODY-------------------------------->
+        <div class="bg-light py-3">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-12 mb-0">
+                        <a href="/">Store</a>
+                        <span class="mx-2 mb-0">/</span>
+                        <a href="/cart">Cart</a>
+                        <span class="mx-2 mb-0">/</span>
+                        <strong class="text-black">Checkout</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="site-section">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-6 mb-5 mb-md-0">
+                        <h2 class="h3 mb-3 text-black">Order Details</h2>
+                        <div class="p-3 p-lg-5 border">
+                            <div class="form-group row">
+                                <div class="col-md-12">
+                                    <label for="address" class="text-black">Specific Address <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="address" name="address" placeholder="Street address" maxlength="50">
+                                </div>
+                            </div>
+
+                            <div class="form-group row">
+                                <div class="col-md-6">
+                                    <label for="ward" class="text-black">Ward<span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="ward" name="ward" placeholder="Ward" maxlength="25">
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="district" class="text-black">District<span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="district" name="district" placeholder="District" maxlength="25">
+                                </div>
+                            </div>
+
+                            <div class="form-group row mb-5">
+                                <div class="col-md-6">
+                                    <label for="city" class="text-black">City<span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="city" name="city" placeholder="City" maxlength="25">
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="phone" class="text-black">Phone<span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="phone" name="phone" placeholder="Phone Number" maxlength="10">
+                                </div>
+                            </div>
+
+                            <div class="alert alert-danger" role="alert" id="error-message" style="display:none;">
+                                Please fill in all REQUIRED order information.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="row mb-5">
+                            <div class="col-md-12">
+                                <h2 class="h3 mb-3 text-black">Your Order</h2>
+                                <div class="p-3 p-lg-5 border">
+                                    <table class="table site-block-order-table mb-5">
+                                        <thead>
+                                            <th>Product</th>
+                                            <th>Total</th>
+                                        </thead>
+                                        <tbody>
+                                            <tr th:each="cartdetail : ${listCartDetail}">
+                                                <td th:text="${cartdetail.getProduct().getName()} + ' x ' + ${cartdetail.getQuantity()}"></td>
+                                                <td th:text="${cartdetail.getAmount()} + ' VND'"></td>
+                                            </tr>
+                                            <tr>
+                                                <td class="text-black font-weight-bold"><strong>Cart Subtotal</strong></td>
+                                                <td class="text-black" th:text="${totalAmount} + ' VND'"></td>
+                                            </tr>
+                                            <tr>
+                                                <td class="text-black font-weight-bold"><strong>Order Total</strong></td>
+                                                <td class="text-black font-weight-bold"><strong th:text="${totalAmount} + ' VND'"></strong></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+
+                                    <div class="form-group">
+                                        <button class="btn btn-primary btn-lg btn-block btn-order">Place Order</button>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+                <!-- </form> -->
+            </div>
+        </div>
+
+    </div>
+
+    <script th:src="@{/js/jquery-3.3.1.min.js}"></script>
+    <script th:src="@{/js/jquery-ui.js}"></script>
+    <script th:src="@{/js/popper.min.js}"></script>
+    <script th:src="@{/js/bootstrap.min.js}"></script>
+    <script th:src="@{/js/owl.carousel.min.js}"></script>
+    <script th:src="@{/js/jquery.magnific-popup.min.js}"></script>
+    <script th:src="@{/js/aos.js}"></script>
+    <script th:src="@{/js/main.js}"></script>
+    <script>
+        $(document).ready(function() {
+            $('#address, #ward, #district, #city, #phone').click(function() {
+                $('#error-message').hide();
+            });
+
+            $('.btn-order').click(function(e) {
+                e.preventDefault();
+
+                var address = $('#address').val();
+                var ward = $('#ward').val();
+                var district = $('#district').val();
+                var city = $('#city').val();
+                var phone = $('#phone').val();
+
+                if (!address || !ward || !district || !city || !phone) {
+                    $('#error-message').show();
+                    return;
+                }
+
+                var order = {
+                    specificAddress: address,
+                    ward: ward,
+                    district: district,
+                    city: city,
+                    phone: phone
+                };
+
+                $.ajax({
+                    url: '/api/orders/add',
+                    type: 'POST',
+                    contentType: "application/json;charset=UTF-8",
+                    data: JSON.stringify(order),
+                    success: function(response) {
+                        alert(response);
+                        window.location.href = "/thankyou";
+                    },
+                    error: function(response) {
+                        alert(response);
+                    }
+                });
+            });
+        });
+
+    </script>
+</body>
+
+</html>

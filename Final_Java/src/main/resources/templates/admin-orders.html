@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>Admin Spring Ecommerce</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <link href='https://fonts.googleapis.com/css?family=Roboto:400,100,300,700' rel='stylesheet' type='text/css'>
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+
+    <link rel="stylesheet" th:href="@{/css/style_admin.css}">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+</head>
+
+<body>
+    <section class="ftco-navbar">
+        <nav class="navbar navbar-expand-lg navbar-dark ftco_navbar bg-dark ftco-navbar-light" id="ftco-navbar">
+            <div class="container">
+                <a class="navbar-brand" href="/admin">Spring <small>Ecommerce</small></a>
+
+                <div class="collapse navbar-collapse" id="ftco-nav">
+                    <ul class="navbar-nav m-auto">
+                        <li class="nav-item"><a href="/admin/category" class="nav-link">Category</a></li>
+                        <li class="nav-item"><a href="/admin/feature" class="nav-link">Feature</a></li>
+                        <li class="nav-item"><a href="/admin/product" class="nav-link">Product</a></li>
+                        <li class="nav-item"><a href="/admin/account" class="nav-link">Account</a></li>
+                        <li class="nav-item active"><a href="/admin/orders" class="nav-link">Orders</a></li>
+                        <li class="nav-item"><a href="/" class="nav-link">Go to Web</a></li>
+                    </ul>
+                </div>
+
+                <div class="form-group d-flex">
+                    <button class="form-control search" onclick="window.location='/logout'">
+						<span class="fa fa-sign-out"></span>
+					</button>
+                </div>
+            </div>
+        </nav>
+        <!-- END nav -->
+    </section>
+
+    <div class="container mt-3">
+        <h2 class="text-center">Orders Management</h2>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="accordion" id="accordionExample">
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div class="modal fade" id="deliveryInfoModal" tabindex="-1" role="dialog" aria-labelledby="deliveryInfoModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deliveryInfoModalLabel">Delivery Information</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="container">
+                            <div class="row">
+                                <div class="form-group col-12">
+                                    <label for="specificAddress">Specific Address</label>
+                                    <input type="text" class="form-control" id="specificAddress" name="specificAddress">
+                                </div>
+                                <div class="form-group col-6">
+                                    <label for="ward">Ward</label>
+                                    <input type="text" class="form-control" id="ward" name="ward">
+                                </div>
+                                <div class="form-group col-6">
+                                    <label for="district">District</label>
+                                    <input type="text" class="form-control" id="district" name="district">
+                                </div>
+                                <div class="form-group col-6">
+                                    <label for="city">City</label>
+                                    <input type="text" class="form-control" id="city" name="city">
+                                </div>
+                                <div class="form-group col-6">
+                                    <label for="phone">Phone</label>
+                                    <input type="text" class="form-control" id="phone" name="phone">
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <button type="button" class="btn btn-primary" id="submit-btn">Save changes</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <script th:src="@{/js/jquery.min.js}"></script>
+    <script th:src="@{/js/popper.js}"></script>
+    <script th:src="@{/js/bootstrap.min.js}"></script>
+    <script th:src="@{/js/main.js}"></script>
+    <script>
+        function renderOrders(orders) {
+            var html = '';
+            for (var i = 0; i < orders.length; i++) {
+                var order = orders[i];
+                var statusString = '';
+                switch (order.status) {
+                    case 0:
+                        statusString = '<strong class="text-danger"> Order Cancelled </strong>';
+                        break;
+                    case 1:
+                        statusString = '<strong class="text-warning"> Pending Confirmation </strong>';
+                        break;
+                    case 2:
+                        statusString = '<strong class="text-primary"> In Transit </strong>';
+                        break;
+                    case 3:
+                        statusString = '<strong class="text-success"> Successfully Delivered </strong>';
+                        break;
+                }
+                html += '<div class="card">';
+                html += '<div class="card-header d-flex" id="heading' + order.id + '" style="justify-content: space-between">';
+                html += '<h2 class="mb-0">';
+                html += '<button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapse' + order.id + '" aria-expanded="true" aria-controls="collapse' + order.id + '">';
+                html += 'Order #' + order.id + ' | ' + order.dateCreated;
+                html += '</button></h2>';
+                html += '<div class="text-black font-weight-bold" style="align-self: center">' + statusString + '</div>';
+                if (order.status === 1) {
+                    html += '<div style="align-self: center">';
+                    html += '<button type="button" class="btn btn-success confirm" data-id="' + order.id + '" data-cart-id="' + order.cart.id + '">Confirm</button>';
+                    html += '<button type="button" class="btn btn-primary edit" data-id="' + order.id + '" data-cart-id="' + order.cart.id + '">Edit</button>';
+                    html += '<button type="button" class="btn btn-danger cancel" data-id="' + order.id + '" data-cart-id="' + order.cart.id + '">Cancel</button>';
+                    html += '</div>';
+                }
+                else {
+                    html += '<div style="align-self: center">';
+                    html += '<button type="button" class="btn btn-secondary disabled">Confirm</button>';
+                    html += '<button type="button" class="btn btn-secondary disabled">Edit</button>';
+                    html += '<button type="button" class="btn btn-secondary disabled">Cancel</button>';
+                    html += '</div>';
+                }
+                html += '</div></div>';
+                html += '<div id="collapse' + order.id + '" class="collapse" aria-labelledby="heading' + order.id + '" data-parent="#accordionExample">';
+                html += '<div class="card-body">';
+                html += '<table class="table">';
+                html += '<thead><tr><th>Product Name</th><th>Quantity</th><th>Price</th><th>Amount</th></tr></thead><tbody>';
+                for (var j = 0; j < order.cartDetails.length; j++) {
+                    var cartDetail = order.cartDetails[j];
+                    html += '<tr>';
+                    html += '<td>' + cartDetail.product.name + '</td>';
+                    html += '<td>' + cartDetail.quantity + '</td>';
+                    html += '<td>' + cartDetail.price + ' VND</td>';
+                    html += '<td>' + cartDetail.amount + ' VND</td>';
+                    html += '</tr>';
+                }
+                html += '</tbody><tr><td class="text-black font-weight-bold"><strong>Order Total</strong></td><td></td><td></td><td class="text-black font-weight-bold"><strong>' + order.cart.totalAmount + ' VND</strong></td></tr>';
+                html += '<tr><td><span class="text-black font-weight-bold">Customer: </span><span>' + order.cart.customer.name + '</span></td></tr>';
+                html += '<tr><td><span class="text-black font-weight-bold">Delivery Address: </span><span>' + order.specificAddress + '</span>, <span>Ward ' + order.ward + '</span>, <span>District ' + order.district + '</span>, <span>' + order.city + '</span></td></tr>';
+                html += '<tr><td><span class="text-black font-weight-bold">Phone Number: </span><span>' + order.phone + '</span></td></tr>';
+                html += '</table></div></div></div>';
+            }
+            $('#accordionExample').html(html);
+        }
+
+        $(document).ready(function() {
+            $.ajax({
+                url: '/api/orders',
+                type: 'GET',
+                success: function(orders) {
+                    renderOrders(orders);
+                },
+                error: function() {
+                    alert('Something went wrong. Try it later.');
+                }
+            });
+
+            var modal = $('#deliveryInfoModal');
+            var form = modal.find('form');
+            $('.accordion').on('click', '.edit', function() {
+                var orderId = $(this).data('id');
+                form.attr('action', '/api/orders/update/' + orderId);
+                $.ajax({
+                    url: '/api/orders/' + orderId,
+                    type: 'GET',
+                    success: function(order) {
+                        $('#specificAddress').val(order.specificAddress);
+                        $('#ward').val(order.ward);
+                        $('#district').val(order.district);
+                        $('#city').val(order.city);
+                        $('#phone').val(order.phone);
+                        modal.modal('show');
+                    },
+                    error: function() {
+                        alert('Something went wrong. Try it later.');
+                    }
+                });
+
+            });
+
+            $('#submit-btn').click(function () {
+                $.ajax({
+                    url: form.attr('action'),
+                    type: 'PUT',
+                    data: new FormData(form[0]),
+                    processData: false,
+                    contentType: false,
+                    success: function() {
+                        alert('Order updated successfully');
+                        modal.modal('hide');
+                        location.reload();
+                    },
+                    error: function() {
+                        alert('Something went wrong. Try it later.');
+                    }
+                });
+            })
+
+            $('.accordion').on('click', '.cancel', function() {
+                var orderId = $(this).data('id');
+                if (confirm('Are you sure you want to cancel this Order?')) {
+                    $.ajax({
+                        url: '/api/orders/cancel/' + orderId,
+                        type: 'POST',
+                        success: function () {
+                            alert("Order has been canceled.");
+                        },
+                        error: function () {
+                            alert("Something went wrong. Try again later");
+                        }
+                    });
+                }
+                $(document).ajaxStop(function() {
+                    location.reload();
+                });
+            });
+
+            $('.accordion').on('click', '.confirm', function() {
+                var orderId = $(this).data('id');
+                if (confirm('Are you sure you want to confirm this Order?')) {
+                    $.ajax({
+                        url: '/api/orders/confirm/' + orderId,
+                        type: 'POST',
+                        success: function () {
+                            alert("Order has been confirm.");
+                        },
+                        error: function () {
+                            alert("Something went wrong. Try again later.");
+                        }
+                    });
+                }
+                $(document).ajaxStop(function() {
+                    location.reload();
+                });
+            });
+
+            setTimeout(function() {
+                $(".alert").alert('close');
+            }, 4000);
+        });
+    </script>
+</body>
+
+</html>

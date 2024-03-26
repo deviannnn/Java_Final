@@ -1,0 +1,536 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>Admin Spring Ecommerce</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <link href='https://fonts.googleapis.com/css?family=Roboto:400,100,300,700' rel='stylesheet' type='text/css'>
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+
+    <link rel="stylesheet" th:href="@{/css/style_admin.css}">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+
+    <!-- Link to noUiSlider CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/14.6.4/nouislider.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/14.6.4/nouislider.min.js"></script>
+
+    <style>
+        .filter-price input {
+            border: none;
+            width: 100px;
+            background-color: #fafafa;
+        }
+        #max_price {
+            text-align: end;
+        }
+
+        #search-input {
+            width: 100%;
+            height: 40px;
+        }
+
+        #search-results {
+            position: absolute;
+            z-index: 2;
+            background-color: #fff;
+            width: 100%;
+            border: 1px solid #ddd;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            max-height: 200px;
+            overflow-y: scroll;
+        }
+    </style>
+</head>
+
+<body>
+    <section class="ftco-navbar">
+        <nav class="navbar navbar-expand-lg navbar-dark ftco_navbar bg-dark ftco-navbar-light" id="ftco-navbar">
+            <div class="container">
+                <a class="navbar-brand" href="/admin">Spring <small>Ecommerce</small></a>
+
+                <div class="collapse navbar-collapse" id="ftco-nav">
+                    <ul class="navbar-nav m-auto">
+                        <li class="nav-item"><a href="/admin/category" class="nav-link">Category</a></li>
+                        <li class="nav-item"><a href="/admin/feature" class="nav-link">Feature</a></li>
+                        <li class="nav-item active"><a href="/admin/product" class="nav-link">Product</a></li>
+                        <li class="nav-item"><a href="/admin/account" class="nav-link">Account</a></li>
+                        <li class="nav-item"><a href="/admin/orders" class="nav-link">Orders</a></li>
+                        <li class="nav-item"><a href="/" class="nav-link">Go to Web</a></li>
+                    </ul>
+                </div>
+
+                <div class="form-group d-flex">
+                    <button class="form-control search" onclick="window.location='/logout'">
+						<span class="fa fa-sign-out"></span>
+					</button>
+                </div>
+            </div>
+        </nav>
+        <!-- END nav -->
+    </section>
+
+    <div class="container mt-3">
+        <h2 class="text-center">Product Management</h2>
+        <h4>Filter</h4>
+        <div class="row mb-4">
+            <div class="col-12">
+                <p>Search product</p>
+                <input type="text" id="search-input" placeholder="Search for edit...">
+                <div id="search-results"></div>
+            </div>
+        </div>
+        <div class="row mt-4 mb-4">
+            <div class="col-3">
+                <p>By category</p>
+                <select class="form-control" id="category-filter">
+                    <option value="">All categories</option>
+                </select>
+            </div>
+            <div class="col-3">
+                <p>By feature</p>
+                <select class="form-control" id="feature-filter">
+                    <option value="">All features</option>
+                </select>
+            </div>
+            <div class="col-3">
+                <p>By sort</p>
+                <select class="form-control" id="price-name-filter">
+                    <option value="">No sort</option>
+                    <option value="/sort-by/name/asc">Name, A to Z</option>
+                    <option value="/sort-by/name/desc">Name, Z to A</option>
+                    <option value="/sort-by/price/asc">Price, low to high</option>
+                    <option value="/sort-by/price/desc">Price, high to low</option>
+                </select>
+            </div>
+            <div class="col-3 filter-price">
+                <p>By price</p>
+                <div id="slider"></div>
+                <div class="row">
+                    <div class="col-6">
+                        <input id="min_price" type="text" disabled />
+                    </div>
+                    <div class="col-6">
+                        <input id="max_price" type="text" disabled />
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row mt-4">
+            <div class="col-auto">
+                <button type="button" class="btn btn-lg btn-success add">Add Product</button>
+            </div>
+            <div class="col-12">
+                <table class="table mt-3">
+                    <thead>
+                        <tr>
+                            <th>No.</th>
+                            <th>Name</th>
+                            <th>Category</th>
+                            <th>Feature</th>
+                            <th>Image</th>
+                            <th>Quantity</th>
+                            <th>Price</th>
+                            <th>Unit</th>>
+                            <th>Description</th>
+                            <th>Function</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Modal -->
+    <div class="modal fade" id="Modal" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="ModalLabel"></h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form method="post" action="" enctype="multipart/form-data">
+                        <div class="container">
+                            <div class="row">
+                                <div class="form-group col-6">
+                                    <label for="name">Name</label>
+                                    <input type="text" class="form-control" id="name" name="name" required>
+                                </div>
+                                <div class="form-group col-3">
+                                    <label for="imageFile">Image</label>
+                                    <input type="file" id="imageFile" name="imageFile" accept="image/*" onchange="previewImage()" required>
+                                </div>
+                                <div class="form-group col-3">
+                                    <img id="imagePreview" src="#" alt="Product Image" style="width: 100px; height: 100px; display: none">
+                                </div>
+                                <div class="form-group col-6">
+                                    <label for="quantity">Quantity</label>
+                                    <input type="number" class="form-control" id="quantity" name="quantity" required>
+                                </div>
+                                <div class="form-group col-6">
+                                    <label for="price">Price</label>
+                                    <input type="number" class="form-control" id="price" name="price" placeholder="VND" required>
+                                </div>
+                                <div class="form-group col-6">
+                                    <label for="unit">Unit</label>
+                                    <input type="text" class="form-control" id="unit" name="unit" required>
+                                </div>
+                                <div class="form-group col-6">
+                                    <label for="description">Description</label>
+                                    <input type="text" class="form-control" id="description" name="description" required>
+                                </div>
+                                <div class="form-group col-6">
+                                    <label for="category">Category</label>
+                                    <select class="form-control" id="category" name="category">
+
+                                    </select>
+                                </div>
+                                <div class="form-group col-6">
+                                    <label for="feature">Feature</label>
+                                    <select class="form-control" id="feature" name="feature">
+
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <button type="button" class="btn btn-success" id="submit-btn">Add</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <script th:src="@{/js/jquery.min.js}"></script>
+    <script th:src="@{/js/popper.js}"></script>
+    <script th:src="@{/js/bootstrap.min.js}"></script>
+    <script th:src="@{/js/main.js}"></script>
+
+    <script>
+        $(document).ready(function() {
+            // Load categoriy select & filter option
+            $.ajax({
+                url: "/api/category",
+                type: "GET",
+                dataType: "json",
+                success: function(data) {
+                    var categorySelect = $("#category");
+                    var categoryFilter = $("#category-filter");
+                    $.each(data, function(index, category) {
+                        categorySelect.append($('<option>', {
+                            value: category.id,
+                            text: category.name
+                        }));
+                        categoryFilter.append($('<option>', {
+                            value: category.id,
+                            text: category.name
+                        }));
+                    });
+                },
+                error: function() {
+                    alert('Something went wrong. Try it later.');
+                }
+            });
+
+            // Load feature select & filter option
+            $.ajax({
+                url: "/api/feature",
+                type: "GET",
+                dataType: "json",
+                success: function(data) {
+                    var featureSelect = $("#feature");
+                    var featureFilter = $("#feature-filter")
+                    $.each(data, function(index, feature) {
+                        featureSelect.append($('<option>', {
+                            value: feature.id,
+                            text: feature.name
+                        }));
+                        featureFilter.append($('<option>', {
+                            value: feature.id,
+                            text: feature.name
+                        }));
+                    });
+                },
+                error: function() {
+                    alert('Something went wrong. Try it later.');
+                }
+            });
+
+            var slider = document.getElementById('slider');
+            var minPrice = document.getElementById('min_price');
+            var maxPrice = document.getElementById('max_price');
+
+            noUiSlider.create(slider, {
+                start: [0, 100000],
+                connect: true,
+                range: {
+                    'min': 0,
+                    'max': 100000
+                }
+            });
+
+            slider.noUiSlider.on('update', function(values, handle) {
+                if (handle === 0) {
+                    minPrice.value = Math.round(values[handle]) + " vnd";
+                } else {
+                    maxPrice.value = Math.round(values[handle]) + " vnd";
+                }
+                var min = Math.round(values[0]);
+                var max = Math.round(values[1]);
+
+                handleFilterChange(min, max);
+            });
+
+            // Handle filter change event
+            function handleFilterChange(minPrice, maxPrice) {
+                var categoryId = $("#category-filter").val();
+                var featureId = $("#feature-filter").val();
+                var sort = $("#price-name-filter").val();
+                var url = '/api/product'; // Load all
+                if (categoryId !== '') {
+                    url += '/category/' + categoryId; // with category id
+                }
+                if (featureId !== '') {
+                    url += '/feature/' + featureId; // with feature id
+                }
+                if (sort !== '') {
+                    url += sort;
+                }
+                if (minPrice != 0 || maxPrice != 100000) {
+                    url += '/price-between/' + minPrice + '/' + maxPrice; // with a range of price
+                }
+                $.ajax({
+                    url: url,
+                    type: 'GET',
+                    success: function(data) {
+                        var tbody = $('tbody');
+                        tbody.empty();
+                        $.each(data, function(index, product) {
+                            var tr = $('<tr>');
+                            tr.append('<td>' + (parseInt(index)+1).toString() + '</td>');
+                            tr.append('<td>' + product.name + '</td>');
+                            tr.append('<td>' + product.category.name + '</td>');
+                            tr.append('<td>' + product.feature.name + '</td>');
+                            tr.append('<td><img src="/images/' + product.image + '" alt="Image" style="width: 100px; height: 100px"></td>');
+                            tr.append('<td>' + product.quantity + '</td>');
+                            tr.append('<td>' + product.price + '</td>');
+                            tr.append('<td>' + product.unit + '</td>');
+                            tr.append('<td>' + product.description + '</td>');
+                            tr.append('<td>' +
+                                '<button type="button" class="btn btn-primary edit" data-id="' + product.id + '">Edit</button>' +
+                                '<button type="button" class="btn btn-danger delete" data-id="' + product.id + '">Delete</button>' +
+                                '</td>');
+                            tbody.append(tr);
+                        });
+                    },
+                    error: function() {
+                        alert('Something went wrong. Try it later.');
+                    }
+                });
+            }
+
+            $('#category-filter, #feature-filter, #price-name-filter').on('change', function () {
+                var minPrice = Math.round(slider.noUiSlider.get()[0]);
+                var maxPrice = Math.round(slider.noUiSlider.get()[1]);
+                handleFilterChange(minPrice, maxPrice);
+            });
+
+            $('#search-input').on('input', function() {
+                var keyword = $(this).val().trim();
+                if (keyword !== '') {
+                    $.ajax({
+                        url: '/api/product/name/' + keyword,
+                        type: 'GET',
+                        dataType: 'json',
+                        success: function(data) {
+                            var results = '';
+                            $.each(data, function(index, product) {
+                                results += '<a href="#" class="search-result" data-id="' + product.id + '"><div>' + product.name + '</div></a>';
+                            });
+                            $('#search-results').html(results);
+                        },
+                        error: function() {
+                            $('#search-results').html('Error loading search results.');
+                        }
+                    });
+                } else {
+                    $('#search-results').empty();
+                }
+            });
+
+            $('tbody').on('click', '.delete', function() {
+                var productId = $(this).data('id');
+                if (confirm('Are you sure you want to delete this Product?')) {
+                    $.ajax({
+                        url: '/api/product/delete/' + productId,
+                        type: 'DELETE',
+                        success: function () {
+                            alert("Successfully deleted product");
+                        },
+                        error: function () {
+                            alert("Something went wrong. Please try again later");
+                        }
+                    });
+                }
+                $(document).ajaxStop(function() {
+                    location.reload();
+                });
+            });
+
+            var modal = $('#Modal');
+            var form = modal.find('form');
+            var title = modal.find('.modal-title');
+            var submitBtn = form.find('#submit-btn');
+
+            // Show modal and set title and form action for adding new product
+            $('.add').click(function () {
+                form.attr('action', '/api/product/add');
+                form.attr('method', 'POST');
+                form.trigger('reset');
+                title.text('Add New Product');
+                submitBtn.text('Add Product');
+                $('#imageFile').prop('required', true);
+                $('#imagePreview').css('display', 'none');
+                modal.modal('show');
+            });
+
+            // Show modal and set title, form action, and form data for editing existing product
+            $('tbody').on('click', '.edit', function() {
+                var productId = $(this).data('id');
+                form.attr('action', '/api/product/update/' + productId);
+                form.attr('method', 'PUT');
+                title.text('Edit Product');
+                submitBtn.text('Save Changes');
+                $('#imageFile').prop('required', false);
+                $.ajax({
+                    url: '/api/product/' + productId,
+                    type: 'GET',
+                    success: function(product) {
+                        $('#name').val(product.name);
+                        $('#quantity').val(product.quantity);
+                        $('#price').val(product.price);
+                        $('#unit').val(product.unit);
+                        $('#description').val(product.description);
+                        $('#imagePreview').attr('src', '/images/' + product.image);
+                        $('#imagePreview').css('display', 'block');
+                        $('#category').val(product.category.id);
+                        $('#feature').val(product.feature.id);
+                        modal.modal('show');
+                    },
+                    error: function() {
+                        alert('Something went wrong. Try it later.');
+                    }
+                });
+            });
+
+            submitBtn.click(function() {
+                var method = form.attr('method');
+                if (method === 'POST') {
+                    $.ajax({
+                        url: form.attr('action'),
+                        type: 'POST',
+                        data: new FormData(form[0]),
+                        processData: false,
+                        contentType: false,
+                        success: function() {
+                            alert('Product added successfully');
+                            modal.modal('hide');
+                            location.reload();
+                        },
+                        error: function() {
+                            alert('Something went wrong. Try it later.');
+                        }
+                    });
+                } else if (method === 'PUT') {
+                    $.ajax({
+                        url: form.attr('action'),
+                        type: 'PUT',
+                        data: new FormData(form[0]),
+                        processData: false,
+                        contentType: false,
+                        success: function() {
+                            alert('Product updated successfully');
+                            modal.modal('hide');
+                            location.reload();
+                        },
+                        error: function() {
+                            alert('Something went wrong. Try it later.');
+                        }
+                    });
+                }
+            });
+
+            // Open the modal edit when user clicks on a search result
+            $('#search-results').on('click', '.search-result', function() {
+                var productId = $(this).data('id');
+                form.attr('action', '/api/product/update/' + productId);
+                form.attr('method', 'PUT');
+                title.text('Edit Product');
+                submitBtn.text('Save Changes');
+                $('#imageFile').prop('required', false);
+                $.ajax({
+                    url: '/api/product/' + productId,
+                    type: 'GET',
+                    success: function(product) {
+                        $('#name').val(product.name);
+                        $('#quantity').val(product.quantity);
+                        $('#price').val(product.price);
+                        $('#unit').val(product.unit);
+                        $('#description').val(product.description);
+                        $('#imagePreview').attr('src', '/images/' + product.image);
+                        $('#imagePreview').css('display', 'block');
+                        $('#category').val(product.category.id);
+                        $('#feature').val(product.feature.id);
+                        modal.modal('show');
+                    },
+                    error: function() {
+                        alert('Something went wrong. Try it later.');
+                    }
+                });
+            });
+        });
+
+        $(document).on('click', function(event) {
+            var searchResults = $('#search-results');
+            var searchInput = $('#search-input');
+
+            if (!searchResults.is(event.target) && !searchInput.is(event.target) && searchResults.has(event.target).length === 0) {
+                searchResults.empty();
+            }
+        });
+
+        function previewImage() {
+            var fileInput = document.getElementById('imageFile');
+            var previewImg = document.getElementById('imagePreview');
+            var file = fileInput.files[0];
+            var reader = new FileReader();
+
+            reader.onloadend = function() {
+                previewImg.src = reader.result;
+                previewImg.style.display = 'block';
+            }
+
+            if (file) {
+                reader.readAsDataURL(file);
+            } else {
+                previewImg.src = '#';
+            }
+        }
+    </script>
+</body>
+
+</html>

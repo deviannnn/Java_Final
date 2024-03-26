@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>Admin Spring Ecommerce</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <link href='https://fonts.googleapis.com/css?family=Roboto:400,100,300,700' rel='stylesheet' type='text/css'>
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+
+    <link rel="stylesheet" th:href="@{/css/style_admin.css}">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+</head>
+
+<body>
+    <section class="ftco-navbar">
+        <nav class="navbar navbar-expand-lg navbar-dark ftco_navbar bg-dark ftco-navbar-light" id="ftco-navbar">
+            <div class="container">
+                <a class="navbar-brand" href="/admin">Spring <small>Ecommerce</small></a>
+
+                <div class="collapse navbar-collapse" id="ftco-nav">
+                    <ul class="navbar-nav m-auto">
+                        <li class="nav-item"><a href="/admin/category" class="nav-link">Category</a></li>
+                        <li class="nav-item"><a href="/admin/feature" class="nav-link">Feature</a></li>
+                        <li class="nav-item"><a href="/admin/product" class="nav-link">Product</a></li>
+                        <li class="nav-item active"><a href="/admin/account" class="nav-link">Account</a></li>
+                        <li class="nav-item"><a href="/admin/orders" class="nav-link">Orders</a></li>
+                        <li class="nav-item"><a href="/" class="nav-link">Go to Web</a></li>
+                    </ul>
+                </div>
+
+                <div class="form-group d-flex">
+                    <button class="form-control search" onclick="window.location='/logout'">
+						<span class="fa fa-sign-out"></span>
+					</button>
+                </div>
+            </div>
+        </nav>
+        <!-- END nav -->
+    </section>
+
+    <div class="container mt-3">
+        <h2 class="text-center">Customer Account Management</h2>
+        <div class="row">
+            <div class="col-12">
+                <table class="table mt-3">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Username</th>
+                            <th>Password</th>
+                            <th>Role</th>
+                            <th>Permission</th>
+                            <th>Last active</th>
+                            <th>Function</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </div>
+    
+    <!-- Edit Modal -->
+    <div class="modal fade" id="editInfoModal" tabindex="-1" role="dialog" aria-labelledby="editInfoModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editInfoModalLabel">Account Permission</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="update-permit-form" method="post">
+                        <div class="form-group">
+                            <label for="permission">Specific Address</label>
+                            <select class="form-control" id="permission" name="permission">
+                                <option value="1">Allow shopping</option>
+                                <option value="0">View only</option>
+                            </select>
+                        </div>
+                        <div class="text-right">
+                            <button type="submit" class="btn btn-primary">Save changes</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script th:src="@{/js/jquery.min.js}"></script>
+    <script th:src="@{/js/popper.js}"></script>
+    <script th:src="@{/js/bootstrap.min.js}"></script>
+    <script th:src="@{/js/main.js}"></script>
+    <script>
+        $(document).ready(function() {
+            $.ajax({
+                url: '/api/account',
+                type: 'GET',
+                dataType: "json",
+                success: function (data) {
+                    var tbody = $('tbody');
+                    $.each(data, function(index, customer) {
+                        var permissionString = '';
+                        if (customer.account.permission === 1) {
+                            permissionString = 'Allow shopping';
+                        }
+                        if (customer.account.permission === 0) {
+                            permissionString = 'View only';
+                        }
+                        var tr = $('<tr>');
+                        tr.append('<td>' + customer.id + '</td>');
+                        tr.append('<td>' + customer.name + '</td>');
+                        tr.append('<td>' + customer.account.username + '</td>');
+                        tr.append('<td>' + customer.account.password + '</td>');
+                        tr.append('<td>' + customer.account.role + '</td>');
+                        tr.append('<td>' + permissionString + '</td>');
+                        tr.append('<td>' + customer.lastActive + '</td>');
+                        tr.append('<td>' + '<button type="button" class="btn btn-primary edit" data-id="'+ customer.account.id +'" data-permisstion="'+ customer.account.permission +'">Edit</button>' + '</td>');
+                        tbody.append(tr);
+                    });
+                }
+            });
+
+            $('tbody').on('click', '.edit', function() {
+                var accountId = $(this).data('id');
+                var accountPermission = $(this).data('permisstion');
+                $('#update-permit-form').attr('action', '/api/account/update/' + accountId);
+                $('#permission').val(accountPermission);
+                $('#editInfoModal').modal('show');
+            });
+
+            setTimeout(function() {
+                $('.flash-message').fadeOut('slow');
+            }, 3000);
+        });
+    </script>
+</body>
+
+</html>
